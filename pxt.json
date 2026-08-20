@@ -16,11 +16,11 @@
         "test.ts"
     ],
     "targetVersions": {
-        "target": "8.0.16",
+        "target": "9.0.8",
         "targetId": "microbit"
     },
     "supportedTargets": [
         "microbit"
     ],
-    "preferredEditor": "blocksprj"
+    "preferredEditor": "pyprj"
 }
