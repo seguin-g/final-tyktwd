@@ -2,17 +2,21 @@
 
 def on_button_pressed_a():
     global bar_x
-    # What happens if the player keeps pressing A?
-    # Que se passe-t-il si le joueur continue d'appuyer sur A ?
-    # Does anything stop the paddle at the wall?
-    # Y a-t-il une règle pour arrêter la raquette au mur ?
-    led.unplot(bar_x + 1, 4)
-    bar_x = bar_x - 1
-    led.plot(bar_x, 4)
+    if game_active:
+        # What happens if the player keeps pressing A?
+        # Que se passe-t-il si le joueur continue d'appuyer sur A ?
+        # Does anything stop the paddle at the wall?
+        # Y a-t-il une règle pour arrêter la raquette au mur ?
+        led.unplot(bar_x + 1, 4)
+        bar_x = bar_x - 1
+        led.plot(bar_x, 4)
 input.on_button_pressed(Button.A, on_button_pressed_a)
 
 def on_button_pressed_ab():
+    global game_active, has_ball
     radio.send_string("start")
+    game_active = True
+    has_ball = True
 input.on_button_pressed(Button.AB, on_button_pressed_ab)
 
 def on_button_pressed_b():
@@ -24,15 +28,14 @@ def on_button_pressed_b():
     led.plot(bar_x + 1, 4)
 input.on_button_pressed(Button.B, on_button_pressed_b)
 
-bar_x = 0
-radio.set_group(0)
-game_active = False
+ball_dy = 0
+ball_dx = 0
+ball_y = 0
+ball_x = 0
 has_ball = False
 bar_x = 0
-ball_x = 0
-ball_y = 0
-ball_dx = 0
-ball_dy = 0
+game_active = False
+radio.set_group(0)
 # The ball's up/down SPEED / La VITESSE haut/bas de la balle
 # --- PADDLE MOVEMENT / MOUVEMENT DE LA RAQUETTE ---
 # // --- Engineer's Note --- //
@@ -57,7 +60,7 @@ def on_forever():
     ball_dx = 1
     ball_dy = 1
     bar_x = 0
-    while True:
+    while game_active:
         led.unplot(ball_x, ball_y)
         # --- Ball Movement ---
         ball_y = ball_y + ball_dy

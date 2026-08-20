@@ -1,10 +1,6 @@
 // The ball's left/right SPEED / La VITESSE gauche/droite de la balle
 input.onButtonPressed(Button.A, function () {
-    if (game_active) {
-        // What happens if the player keeps pressing A?
-        // Que se passe-t-il si le joueur continue d'appuyer sur A ?
-        // Does anything stop the paddle at the wall?
-        // Y a-t-il une règle pour arrêter la raquette au mur ?
+    if (bar_x >= 1) {
         led.unplot(bar_x + 1, 4)
         bar_x = bar_x - 1
         led.plot(bar_x, 4)
@@ -14,25 +10,41 @@ input.onButtonPressed(Button.AB, function () {
     radio.sendString("start")
     game_active = true
     has_ball = true
+    ball_x = randint(0, 3)
+    // randint(0, 4)
+    ball_y = 0
+    ball_dx = 1
+    ball_dy = 1
+})
+radio.onReceivedString(function (receivedString) {
+    if (receivedString == "start") {
+        game_active = true
+        has_ball = false
+        ball_dx = 0
+        ball_dy = 0
+        bar_x = 0
+    }
 })
 input.onButtonPressed(Button.B, function () {
-    // Same question here for moving right.
-    // Même question ici pour le mouvement vers la droite.
-    led.unplot(bar_x, 4)
-    bar_x = bar_x + 1
-    led.plot(bar_x + 1, 4)
+    if (bar_x < 3) {
+        led.unplot(bar_x, 4)
+        bar_x = bar_x + 1
+        led.plot(bar_x + 1, 4)
+    }
 })
 let ball_dy = 0
 let ball_dx = 0
 let ball_y = 0
 let ball_x = 0
 let bar_x = 0
-let game_active = false
 let has_ball = false
-has_ball = false
-game_active = false
+let game_active = false
 radio.setGroup(0)
-bar_x = 0
+game_active = false
+has_ball = false
+bar_x = 2
+led.plot(bar_x, 4)
+led.plot(bar_x + 1, 4)
 // The ball's up/down SPEED / La VITESSE haut/bas de la balle
 // --- PADDLE MOVEMENT / MOUVEMENT DE LA RAQUETTE ---
 // // --- Engineer's Note --- //
@@ -49,13 +61,7 @@ bar_x = 0
 // // NOTE DU CHEF D'ÉQUIPE: La structure générale de cette boucle est bonne.
 // // Les bogues sont de petites erreurs à l'intérieur des conditions 'if'.
 basic.forever(function () {
-    ball_x = randint(0, 3)
-    // randint(0, 4)
-    ball_y = 0
-    ball_dx = 1
-    ball_dy = 1
-    bar_x = 0
-    while (game_active) {
+    while (game_active && has_ball) {
         led.unplot(ball_x, ball_y)
         // --- Ball Movement ---
         ball_y = ball_y + ball_dy
