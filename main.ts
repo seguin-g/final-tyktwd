@@ -1,93 +1,100 @@
-radio.setGroup(1)
-let bar_x = 1
-let ball_x = 0
-let ball_y = 0
-let ball_dx = 0
-let ball_dy = 0
-let has_ball = false
-let game_active = true
-input.onButtonPressed(Button.A, function on_button_pressed_a() {
-    
-    if (bar_x > 0) {
+// The ball's left/right SPEED / La VITESSE gauche/droite de la balle
+input.onButtonPressed(Button.A, function () {
+    if (game_active) {
+        // What happens if the player keeps pressing A?
+        // Que se passe-t-il si le joueur continue d'appuyer sur A ?
+        // Does anything stop the paddle at the wall?
+        // Y a-t-il une règle pour arrêter la raquette au mur ?
         led.unplot(bar_x + 1, 4)
-        bar_x -= 1
+        bar_x = bar_x - 1
         led.plot(bar_x, 4)
     }
-    
 })
-input.onButtonPressed(Button.B, function on_button_pressed_b() {
-    
-    if (bar_x < 3) {
-        led.unplot(bar_x, 4)
-        bar_x += 1
-        led.plot(bar_x + 1, 4)
-    }
-    
+input.onButtonPressed(Button.AB, function () {
+    radio.sendString("start")
+    game_active = true
+    has_ball = true
 })
-input.onButtonPressed(Button.AB, function on_button_pressed_ab() {
-    
-    if (!has_ball && game_active) {
-        ball_x = randint(1, 3)
-        ball_y = 3
-        ball_dx = 1
-        ball_dy = -1
-        has_ball = true
-    }
-    
-})
-radio.onReceivedValue(function on_received_value(name: string, value: number) {
-    
-    if (name == "bx") {
-        ball_x = 4 - value
-        ball_y = 0
-        ball_dy = 1
-    } else if (name == "bdx") {
-        ball_dx = -value
-        has_ball = true
-    } else if (name == "over") {
-        game_active = false
-        basic.showIcon(IconNames.Happy)
-    }
-    
-})
-basic.forever(function on_forever() {
-    
-    led.plot(bar_x, 4)
+input.onButtonPressed(Button.B, function () {
+    // Same question here for moving right.
+    // Même question ici pour le mouvement vers la droite.
+    led.unplot(bar_x, 4)
+    bar_x = bar_x + 1
     led.plot(bar_x + 1, 4)
-    if (!game_active || !has_ball) {
-        basic.pause(50)
-        return
-    }
-    
-    led.unplot(ball_x, ball_y)
-    ball_y += ball_dy
-    ball_x += ball_dx
-    //  Horizontal wall bounce
-    if (ball_x <= 0 || ball_x >= 4) {
-        ball_dx *= -1
-    }
-    
-    //  Send ball to the other device
-    if (ball_y <= 0) {
-        has_ball = false
-        radio.sendValue("bx", ball_x)
-        radio.sendValue("bdx", ball_dx)
-        return
-    }
-    
-    //  Paddle collision
-    if (ball_y >= 4) {
-        if (ball_x == bar_x || ball_x == bar_x + 1) {
-            ball_dy = -1
-        } else {
-            game_active = false
-            radio.sendValue("over", 1)
-            basic.showIcon(IconNames.Sad)
-            return
+})
+let ball_dy = 0
+let ball_dx = 0
+let ball_y = 0
+let ball_x = 0
+let bar_x = 0
+let game_active = false
+let has_ball = false
+has_ball = false
+game_active = false
+radio.setGroup(0)
+bar_x = 0
+// The ball's up/down SPEED / La VITESSE haut/bas de la balle
+// --- PADDLE MOVEMENT / MOUVEMENT DE LA RAQUETTE ---
+// // --- Engineer's Note --- //
+// I wrote the instructions for what the buttons should DO,
+// but I'm not sure I ever told the micro:bit to LISTEN for the button presses.
+// Something feels like it's missing here...
+// // --- Note de l'ingénieur --- //
+// J'ai écrit les instructions pour ce que les boutons DOIVENT faire,
+// mais je ne suis pas sûr d'avoir dit au micro:bit d'ÉCOUTER les appuis sur les boutons.
+// Il me semble qu'il manque quelque chose ici...
+// --- MAIN GAME LOOP / BOUCLE DE JEU PRINCIPALE ---
+// // TEAM LEAD NOTE: The overall structure of this loop is good.
+// // The bugs are small mistakes inside the 'if' statements.
+// // NOTE DU CHEF D'ÉQUIPE: La structure générale de cette boucle est bonne.
+// // Les bogues sont de petites erreurs à l'intérieur des conditions 'if'.
+basic.forever(function () {
+    ball_x = randint(0, 3)
+    // randint(0, 4)
+    ball_y = 0
+    ball_dx = 1
+    ball_dy = 1
+    bar_x = 0
+    while (game_active) {
+        led.unplot(ball_x, ball_y)
+        // --- Ball Movement ---
+        ball_y = ball_y + ball_dy
+        ball_x = ball_x + ball_dx
+        // One of these lines is 'commented out' with a #. The computer is ignoring it.
+        // Should it be active for the game to work properly?
+        // Une de ces lignes est 'commentée' avec un #. L'ordinateur l'ignore.
+        // Devrait-elle être active pour que le jeu fonctionne bien ?
+        // ball_? = ball_? + ball_d?
+        // --- Wall Bounces ---
+        if (ball_y <= 0) {
+            // This code runs when the ball hits the TOP wall.
+            // It should reverse the ball's UP/DOWN speed.
+            // HINT: Look at the variable names. Is it changing the correct speed (dx or dy)?
+            // Ce code s'exécute quand la balle frappe le mur du HAUT.
+            // Il devrait inverser la VITESSE HAUT/BAS de la balle.
+            // INDICE: Change-t-il la bonne variable de vitesse (dx ou dy) ?
+            ball_dy = 1
         }
-        
+        if (ball_x <= 0 || ball_x >= 4) {
+            ball_dx = ball_dx * -1
+        }
+        // --- Paddle Check ---
+        if (ball_y >= 4) {
+            if (ball_x == bar_x || ball_x == bar_x + 1) {
+                // This code runs when the ball hits the paddle.
+                // HINT: This math is wrong. It stops the ball instead of bouncing it.
+                // What math would make the ball go the other way?
+                // Ce code s'exécute quand la balle touche la raquette.
+                // INDICE: Ce calcul est faux. Il arrête la balle au lieu de la faire rebondir.
+                // Quel calcul ferait aller la balle dans l'autre sens ?
+                ball_dy = -1
+            } else {
+                game.gameOver()
+            }
+        }
+        led.plot(ball_x, ball_y)
+        led.plot(bar_x, 4)
+        led.plot(bar_x + 1, 4)
+        basic.pause(400)
     }
-    
-    led.plot(ball_x, ball_y)
-    basic.pause(400)
 })
