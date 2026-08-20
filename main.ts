@@ -1,3 +1,6 @@
+input.onLogoEvent(TouchButtonEvent.Touched, function () {
+    radio.sendString("start")
+})
 // The ball's left/right SPEED / La VITESSE gauche/droite de la balle
 input.onButtonPressed(Button.A, function () {
     if (bar_x >= 1) {
@@ -11,8 +14,7 @@ input.onButtonPressed(Button.AB, function () {
     game_active = true
     has_ball = true
     ball_x = randint(0, 3)
-    // randint(0, 4)
-    ball_y = 0
+    ball_y = 1
     ball_dx = 1
     ball_dy = 1
 })
@@ -22,7 +24,6 @@ radio.onReceivedString(function (receivedString) {
         has_ball = false
         ball_dx = 0
         ball_dy = 0
-        bar_x = 0
     }
 })
 input.onButtonPressed(Button.B, function () {
@@ -30,6 +31,14 @@ input.onButtonPressed(Button.B, function () {
         led.unplot(bar_x, 4)
         bar_x = bar_x + 1
         led.plot(bar_x + 1, 4)
+    }
+})
+radio.onReceivedValue(function (name, value) {
+    if (name == "ball_x") {
+        ball_x = value
+        ball_dx = 1
+        ball_dy = 1
+        has_ball = true
     }
 })
 let ball_dy = 0
@@ -62,24 +71,14 @@ led.plot(bar_x + 1, 4)
 // // Les bogues sont de petites erreurs à l'intérieur des conditions 'if'.
 basic.forever(function () {
     while (game_active && has_ball) {
+        serial.writeLine("avant ball_y=" + convertToText(ball_y))
         led.unplot(ball_x, ball_y)
-        // --- Ball Movement ---
         ball_y = ball_y + ball_dy
         ball_x = ball_x + ball_dx
-        // One of these lines is 'commented out' with a #. The computer is ignoring it.
-        // Should it be active for the game to work properly?
-        // Une de ces lignes est 'commentée' avec un #. L'ordinateur l'ignore.
-        // Devrait-elle être active pour que le jeu fonctionne bien ?
-        // ball_? = ball_? + ball_d?
-        // --- Wall Bounces ---
-        if (ball_y <= 0) {
-            // This code runs when the ball hits the TOP wall.
-            // It should reverse the ball's UP/DOWN speed.
-            // HINT: Look at the variable names. Is it changing the correct speed (dx or dy)?
-            // Ce code s'exécute quand la balle frappe le mur du HAUT.
-            // Il devrait inverser la VITESSE HAUT/BAS de la balle.
-            // INDICE: Change-t-il la bonne variable de vitesse (dx ou dy) ?
-            ball_dy = 1
+        if (ball_y < 0) {
+            radio.sendValue("ball_x", ball_x)
+            has_ball = false
+            continue;
         }
         if (ball_x <= 0 || ball_x >= 4) {
             ball_dx = ball_dx * -1
@@ -103,4 +102,5 @@ basic.forever(function () {
         led.plot(bar_x + 1, 4)
         basic.pause(400)
     }
+    basic.pause(400)
 })
