@@ -1,4 +1,3 @@
-// The ball's left/right SPEED / La VITESSE gauche/droite de la balle
 input.onButtonPressed(Button.A, function () {
     if (bar_x >= 1) {
         led.unplot(bar_x + 1, 4)
@@ -75,21 +74,6 @@ basic.pause(1000)
 basic.clearScreen()
 led.plot(bar_x, 4)
 led.plot(bar_x + 1, 4)
-// The ball's up/down SPEED / La VITESSE haut/bas de la balle
-// --- PADDLE MOVEMENT / MOUVEMENT DE LA RAQUETTE ---
-// // --- Engineer's Note --- //
-// I wrote the instructions for what the buttons should DO,
-// but I'm not sure I ever told the micro:bit to LISTEN for the button presses.
-// Something feels like it's missing here...
-// // --- Note de l'ingénieur --- //
-// J'ai écrit les instructions pour ce que les boutons DOIVENT faire,
-// mais je ne suis pas sûr d'avoir dit au micro:bit d'ÉCOUTER les appuis sur les boutons.
-// Il me semble qu'il manque quelque chose ici...
-// --- MAIN GAME LOOP / BOUCLE DE JEU PRINCIPALE ---
-// // TEAM LEAD NOTE: The overall structure of this loop is good.
-// // The bugs are small mistakes inside the 'if' statements.
-// // NOTE DU CHEF D'ÉQUIPE: La structure générale de cette boucle est bonne.
-// // Les bogues sont de petites erreurs à l'intérieur des conditions 'if'.
 basic.forever(function () {
     while (game_active && has_ball) {
         led.unplot(ball_x, ball_y)
@@ -99,11 +83,9 @@ basic.forever(function () {
             if (ball_y < 1) {
                 ball_dy = 1
             }
-        } else {
-            if (ball_y < 0) {
-                has_ball = false
-                continue;
-            }
+        } else if (ball_y < 0) {
+            has_ball = false
+            continue;
         }
         if (ball_x <= 0 || ball_x >= 4) {
             ball_dx = ball_dx * -1
@@ -111,12 +93,6 @@ basic.forever(function () {
         // --- Paddle Check ---
         if (ball_y >= 4) {
             if (ball_x == bar_x || ball_x == bar_x + 1) {
-                // This code runs when the ball hits the paddle.
-                // HINT: This math is wrong. It stops the ball instead of bouncing it.
-                // What math would make the ball go the other way?
-                // Ce code s'exécute quand la balle touche la raquette.
-                // INDICE: Ce calcul est faux. Il arrête la balle au lieu de la faire rebondir.
-                // Quel calcul ferait aller la balle dans l'autre sens ?
                 ball_dy = -1
             } else {
                 game_active = false
