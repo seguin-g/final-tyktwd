@@ -11,15 +11,17 @@ input.onButtonPressed(Button.A, function () {
     }
 })
 input.onButtonPressed(Button.AB, function () {
+    basic.clearScreen()
     if (nb_joueurs == 2) {
         radio.sendString("start")
     }
     game_active = true
     has_ball = true
     ball_x = randint(0, 3)
-    ball_y = 1
+    ball_y = 0
     ball_dx = 1
     ball_dy = 1
+    led.plot(ball_x, ball_y)
 })
 radio.onReceivedString(function (receivedString) {
     if (receivedString == "start") {
@@ -128,6 +130,7 @@ basic.forever(function () {
                 // Quel calcul ferait aller la balle dans l'autre sens ?
                 ball_dy = -1
             } else {
+                game_active = false
                 if (nb_joueurs == 2) {
                     radio.sendString("you_won")
                 }
