@@ -1,5 +1,6 @@
 input.onLogoEvent(TouchButtonEvent.Touched, function () {
     radio.sendString("start")
+    nb_joueurs = 2
 })
 // The ball's left/right SPEED / La VITESSE gauche/droite de la balle
 input.onButtonPressed(Button.A, function () {
@@ -10,7 +11,9 @@ input.onButtonPressed(Button.A, function () {
     }
 })
 input.onButtonPressed(Button.AB, function () {
-    radio.sendString("start")
+    if (nb_joueurs == 2) {
+        radio.sendString("start")
+    }
     game_active = true
     has_ball = true
     ball_x = randint(0, 3)
@@ -20,10 +23,25 @@ input.onButtonPressed(Button.AB, function () {
 })
 radio.onReceivedString(function (receivedString) {
     if (receivedString == "start") {
+        images.createImage(`
+            . # # . .
+            # . . # .
+            . . # . .
+            . # . . .
+            # # # # .
+            `).showImage(0)
         game_active = true
         has_ball = false
         ball_dx = 0
         ball_dy = 0
+        nb_joueurs = 2
+        basic.pause(1000)
+        basic.clearScreen()
+        led.plot(bar_x, 4)
+        led.plot(bar_x + 1, 4)
+    }
+    if (receivedString == "you_won") {
+        images.iconImage(IconNames.Heart).showImage(0)
     }
 })
 input.onButtonPressed(Button.B, function () {
@@ -48,10 +66,21 @@ let ball_x = 0
 let bar_x = 0
 let has_ball = false
 let game_active = false
+let nb_joueurs = 0
 radio.setGroup(0)
+images.createImage(`
+    . . # . .
+    . # # . .
+    . . # . .
+    . . # . .
+    . # # # .
+    `).showImage(0)
+nb_joueurs = 1
 game_active = false
 has_ball = false
 bar_x = 2
+basic.pause(1000)
+basic.clearScreen()
 led.plot(bar_x, 4)
 led.plot(bar_x + 1, 4)
 // The ball's up/down SPEED / La VITESSE haut/bas de la balle
@@ -71,14 +100,19 @@ led.plot(bar_x + 1, 4)
 // // Les bogues sont de petites erreurs à l'intérieur des conditions 'if'.
 basic.forever(function () {
     while (game_active && has_ball) {
-        serial.writeLine("avant ball_y=" + convertToText(ball_y))
         led.unplot(ball_x, ball_y)
         ball_y = ball_y + ball_dy
         ball_x = ball_x + ball_dx
-        if (ball_y < 0) {
-            radio.sendValue("ball_x", ball_x)
-            has_ball = false
-            continue;
+        if (nb_joueurs == 1) {
+            if (ball_y < 1) {
+                ball_dy = 1
+            }
+        } else {
+            if (ball_y < 0) {
+                radio.sendValue("ball_x", ball_x)
+                has_ball = false
+                continue;
+            }
         }
         if (ball_x <= 0 || ball_x >= 4) {
             ball_dx = ball_dx * -1
@@ -94,6 +128,9 @@ basic.forever(function () {
                 // Quel calcul ferait aller la balle dans l'autre sens ?
                 ball_dy = -1
             } else {
+                if (nb_joueurs == 2) {
+                    radio.sendString("you_won")
+                }
                 game.gameOver()
             }
         }
