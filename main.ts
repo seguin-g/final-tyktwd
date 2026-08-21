@@ -1,7 +1,3 @@
-input.onLogoEvent(TouchButtonEvent.Touched, function () {
-    radio.sendString("start")
-    nb_joueurs = 2
-})
 // The ball's left/right SPEED / La VITESSE gauche/droite de la balle
 input.onButtonPressed(Button.A, function () {
     if (bar_x >= 1) {
@@ -12,9 +8,6 @@ input.onButtonPressed(Button.A, function () {
 })
 input.onButtonPressed(Button.AB, function () {
     basic.clearScreen()
-    if (nb_joueurs == 2) {
-        radio.sendString("start")
-    }
     game_active = true
     has_ball = true
     ball_x = randint(0, 3)
@@ -36,14 +29,11 @@ radio.onReceivedString(function (receivedString) {
         has_ball = false
         ball_dx = 0
         ball_dy = 0
-        nb_joueurs = 2
+        players = 2
         basic.pause(1000)
         basic.clearScreen()
         led.plot(bar_x, 4)
         led.plot(bar_x + 1, 4)
-    }
-    if (receivedString == "you_won") {
-        images.iconImage(IconNames.Heart).showImage(0)
     }
 })
 input.onButtonPressed(Button.B, function () {
@@ -68,7 +58,7 @@ let ball_x = 0
 let bar_x = 0
 let has_ball = false
 let game_active = false
-let nb_joueurs = 0
+let players = 0
 radio.setGroup(0)
 images.createImage(`
     . . # . .
@@ -77,7 +67,7 @@ images.createImage(`
     . . # . .
     . # # # .
     `).showImage(0)
-nb_joueurs = 1
+players = 1
 game_active = false
 has_ball = false
 bar_x = 2
@@ -105,13 +95,12 @@ basic.forever(function () {
         led.unplot(ball_x, ball_y)
         ball_y = ball_y + ball_dy
         ball_x = ball_x + ball_dx
-        if (nb_joueurs == 1) {
+        if (players == 1) {
             if (ball_y < 1) {
                 ball_dy = 1
             }
         } else {
             if (ball_y < 0) {
-                radio.sendValue("ball_x", ball_x)
                 has_ball = false
                 continue;
             }
@@ -131,9 +120,6 @@ basic.forever(function () {
                 ball_dy = -1
             } else {
                 game_active = false
-                if (nb_joueurs == 2) {
-                    radio.sendString("you_won")
-                }
                 game.gameOver()
             }
         }
